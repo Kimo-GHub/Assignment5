@@ -7,15 +7,33 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         //
-        $students = Student::all();
-        return view('index', compact('students'));
+        $query = Student::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('min_age')) {
+            $query->where('age', '>=', $request->min_age);
+        }
+
+        if ($request->filled('max_age')) {
+            $query->where('age', '<=', $request->max_age);
+        }
+
+        $students = $query->get();
+
+        if ($request->ajax()) {
+            return view('students.partials.student_rows', compact('students'))->render();
+        }
+
+        return view('students.index', compact('students'));
     }
+    }
+    
 
     /**
      * Show the form for creating a new resource.
